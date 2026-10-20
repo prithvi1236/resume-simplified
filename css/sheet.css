@@ -50,6 +50,15 @@
 #sheet .itb button:hover{background:#E6F0F0;border-color:#0D5C63}
 #sheet .itb button[disabled]{opacity:.35;cursor:default}
 #sheet .itb button.armed{width:auto;padding:0 5px;background:#B3261E;border-color:#B3261E;color:#fff}
+#sheet .mvb{position:absolute;left:-24px;top:-1px;display:none;flex-direction:column;gap:2px;z-index:3}
+#sheet .it.sel>.mvb,#sheet .it:hover>.mvb{display:flex}
+#sheet .mv{width:20px;height:20px;border:1px solid #C3CBD4;background:#fff;color:#2A3442;border-radius:4px;font:11px/1 var(--ui);padding:0}
+#sheet .mv:hover,#sheet .mv:focus-visible{background:#E6F0F0;border-color:#0D5C63}
+/* Only one entry's buttons at a time: hovering another entry hides the selected one's, so the columns never stack up. */
+#sheet:has(.it:hover) .it.sel:not(:hover)>.mvb,#sheet:has(.it:hover) .it.sel:not(:hover)>.itb{display:none}
+/* While an arrow is hovered: the entry that moves, and the one it trades places with. */
+#sheet .pg:not(.meas) .it.mvsrc{background:rgba(13,92,99,.12);box-shadow:0 0 0 3px rgba(13,92,99,.12);border-radius:2px}
+#sheet .pg:not(.meas) .it.mvdst{background:rgba(217,147,13,.12);box-shadow:0 0 0 3px rgba(217,147,13,.12);border-radius:2px}
 #sheet .sh{position:relative}
 #sheet .sha{position:absolute;right:0;bottom:2px;display:none;border:1px solid #9CC8CB;background:#DCEDED;color:#0D5C63;border-radius:4px;font:600 11px/1.5 var(--ui);padding:0 6px}
 #sheet .sh:hover .sha,#sheet .sha:focus{display:block}
@@ -63,7 +72,7 @@
 #sheet .pg.zm .ft{top:auto;bottom:18px}
 /* Scaled, not re-laid-out, so every line wraps exactly as on the page. fitZoom() sets the scale and reserves the extra height. */
 #sheet .pg:not(.meas) .zm{position:relative;z-index:2;transform-origin:50% 0;margin-top:6px;background:#F4FAFA;outline:2px solid rgba(13,92,99,.6);outline-offset:3px;border-radius:2px}
-#sheet .zm>.itb{display:none!important}
+#sheet .zm>.itb,#sheet .zm>.mvb{display:none!important}
 #sheet .zbar{display:none}
 #sheet .pg:not(.meas) .zm>.zbar{display:flex;justify-content:flex-end;margin-top:4px}
 #sheet .zbar button{border:1px solid #0D5C63;background:#0D5C63;color:#fff;border-radius:99px;font:600 9px/1 var(--ui);padding:3px 8px}
