@@ -1,0 +1,21 @@
+/* Narrow-screen layout and motion preferences. Loaded last so it overrides the files above. */
+@media (max-width:1180px){
+  .body,body[data-panel="off"] .body{grid-template-columns:minmax(0,1fr);height:auto}
+  .top{flex-wrap:wrap;height:auto;padding:10px 12px}
+  nav{flex-wrap:nowrap;overflow-x:auto;position:sticky;top:0;z-index:2}
+  main,#pvwrap{overflow:visible}
+  #side{border-left:0}
+  #panelBtn{display:none}
+  .mode{display:flex;gap:6px}
+  body[data-view="page"] #side{display:none!important}
+  body[data-view="panel"] #pvwrap{display:none}
+  body[data-view="panel"] #side{display:flex!important}
+}
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  main{padding:16px 14px 60px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .cb{animation:open .14s ease-out}
+  @keyframes open{from{opacity:.4;transform:translateY(-3px)}to{opacity:1;transform:none}}
+}

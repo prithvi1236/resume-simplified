@@ -1,0 +1,28 @@
+/* Design tokens (light and dark) and element resets. */
+:root{
+  --bg:#E7EBF0; --panel:#FFFFFF; --panel2:#F3F5F8; --ink:#152033; --mut:#586577; --line:#D2D8E0;
+  --acc:#0D5C63; --acc-ink:#FFFFFF; --acc-soft:#DCEDED; --acc-line:#9CC8CB;
+  --warn:#8A5200; --warn-bg:#FFF1D2; --err:#B3261E; --err-bg:#FCE6E4; --ok:#1B6E45; --ok-bg:#DFF1E7;
+  --shadow:0 1px 2px rgba(20,32,51,.08),0 8px 24px rgba(20,32,51,.08);
+  --ui:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --paper-font:'Aptos Display','Aptos','ResumeSim',Calibri,'Segoe UI',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F151D; --panel:#18212C; --panel2:#1F2A37; --ink:#E7ECF2; --mut:#9AA8BA; --line:#2C3948;
+  --acc:#4DB6BD; --acc-ink:#062B2E; --acc-soft:#173A3D; --acc-line:#2B6F75;
+  --warn:#F0B44C; --warn-bg:#3A2C10; --err:#FF8A80; --err-bg:#3D1A18; --ok:#69CF9A; --ok-bg:#143526;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#0F151D; --panel:#18212C; --panel2:#1F2A37; --ink:#E7ECF2; --mut:#9AA8BA; --line:#2C3948;
+  --acc:#4DB6BD; --acc-ink:#062B2E; --acc-soft:#173A3D; --acc-line:#2B6F75;
+  --warn:#F0B44C; --warn-bg:#3A2C10; --err:#FF8A80; --err-bg:#3D1A18; --ok:#69CF9A; --ok-bg:#143526;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--ui);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
