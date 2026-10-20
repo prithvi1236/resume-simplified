@@ -23,6 +23,8 @@
 #sheet .hl.blue{color:#467886}
 #sheet .sh{font-weight:700;border-bottom:1px solid #000;margin-top:5.33px;padding-bottom:1.1px}
 #sheet .it{position:relative;cursor:pointer;display:flow-root}
+/* An invisible strip out into both margins, so the pointer can travel from the text to the margin buttons without leaving the entry. It sits under the lines (which are positioned), so it never blocks typing. */
+#sheet .it::before{content:"";position:absolute;left:-30px;right:-44px;top:0;bottom:0}
 #sheet .it.warn::after,#sheet .it.bad::after{content:"";position:absolute;left:-30px;top:1px;bottom:1px;width:4px;border-radius:2px;background:#D9930D}
 #sheet .it.bad::after{background:#C62828}
 #sheet .ln{display:flex;justify-content:space-between;gap:10px;white-space:pre-wrap;position:relative}
@@ -74,7 +76,7 @@
 #sheet .pg:not(.meas) .zm{position:relative;z-index:2;transform-origin:50% 0;margin-top:6px;background:#F4FAFA;outline:2px solid rgba(13,92,99,.6);outline-offset:3px;border-radius:2px}
 #sheet .zm>.itb,#sheet .zm>.mvb{display:none!important}
 #sheet .zbar{display:none}
-#sheet .pg:not(.meas) .zm>.zbar{display:flex;justify-content:flex-end;gap:4px;margin-top:4px}
+#sheet .pg:not(.meas) .zm>.zbar{position:relative;display:flex;justify-content:flex-end;gap:4px;margin-top:4px}
 #sheet .zbar button{border:1px solid #0D5C63;background:#0D5C63;color:#fff;border-radius:99px;font:600 9px/1 var(--ui);padding:3px 8px}
 #sheet .zbar button:hover{background:#0A474C}
 #sheet .zbar button[data-pa=hide],#sheet .zbar button[data-pa=del]{background:#fff;color:#2A3442;border-color:#C3CBD4}
