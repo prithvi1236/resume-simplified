@@ -231,6 +231,19 @@ body:not([data-ready]) main,body:not([data-ready]) #pvwrap{opacity:.5;pointer-ev
 .dres li{padding:6px 10px;border-radius:8px;margin-top:4px;background:var(--panel2)}
 .dres li.ok{background:var(--ok-bg);color:var(--ok)} .dres li.bad{background:var(--err-bg);color:var(--err)}
 .dres a{color:inherit;font-weight:600}
+/* Zoom on edit: the entry being edited grows in place; its page stretches to fit it. */
+#sheet .hd{position:relative}
+#sheet .hd:hover>.itb{display:flex}
+#sheet .pg.zm{height:auto;min-height:1123px;overflow:visible}
+#sheet .pg.zm .pc{position:relative;left:auto;right:auto;top:auto;padding:48px 48px 64px}
+#sheet .pg.zm .ft{top:auto;bottom:18px}
+/* Scaled, not re-laid-out, so every line wraps exactly as on the page. fitZoom() sets the scale and reserves the extra height. */
+#sheet .pg:not(.meas) .zm{position:relative;z-index:2;transform-origin:50% 0;margin-top:6px;background:#F4FAFA;outline:2px solid rgba(13,92,99,.6);outline-offset:3px;border-radius:2px}
+#sheet .zm>.itb{display:none!important}
+#sheet .zbar{display:none}
+#sheet .pg:not(.meas) .zm>.zbar{display:flex;justify-content:flex-end;margin-top:4px}
+#sheet .zbar button{border:1px solid #0D5C63;background:#0D5C63;color:#fff;border-radius:99px;font:600 9px/1 var(--ui);padding:3px 8px}
+#sheet .zbar button:hover{background:#0A474C}
 </style>
 </head>
 <body>
@@ -253,10 +266,11 @@ body:not([data-ready]) main,body:not([data-ready]) #pvwrap{opacity:.5;pointer-ev
         <button class="btn sm" data-add="skills">Skills</button><button class="btn sm" data-add="work">Work</button><button class="btn sm" data-add="projects">Project</button><button class="btn sm" data-add="courses">Course</button><button class="btn sm" data-add="positions">Position</button><button class="btn sm" data-add="achievements">Achievement</button><button class="btn sm" data-add="hobbies">Hobbies</button><button class="btn sm" data-add="refs">Reference</button>
       </div>
       <span class="meta" id="pgcount"></span>
+      <button class="btn sm" id="zoomBtn" aria-pressed="true" title="Enlarge the entry you are editing, right on the page">Zoom on edit: On</button>
       <button class="btn sm" id="panelBtn" aria-pressed="true">Hide details</button>
     </div>
     <div id="pvbox"><div id="sheet"></div></div>
-    <p class="note">Click any text on the page to type over it. Enter moves to the next field. Select words in a sentence and press Ctrl+B (⌘B) to bold them. Use the buttons in the right margin to reorder, hide or delete an entry. Coloured margin bars mark lines with guideline issues.</p>
+    <p class="note">Click any text on the page to type over it. Enter moves to the next field. Select words in a sentence and press Ctrl+B (⌘B) to bold them. Use the buttons in the right margin to reorder, hide or delete an entry. The entry you edit is enlarged in place; press Esc, click outside it or use "Zoom out" to shrink it back. Coloured margin bars mark lines with guideline issues.</p>
   </section>
   <aside id="side" aria-label="Details">
     <nav id="nav" aria-label="Sections"></nav>
@@ -21951,7 +21965,7 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
       // Leave any field first so a pending page edit cannot write the old text back.
       const a = document.activeElement; if (a && a !== document.body && a.blur) { this.busy = true; a.blur(); }
       setTimeout(() => {
-        state = normalize(JSON.parse(this.base)); ui.sel = '';
+        state = normalize(JSON.parse(this.base)); ui.sel = ''; ui.zoom = null;
         this.busy = true; touch(); this.busy = false;
         clearTimeout(this.timer); this.timer = null;
         renderAll(); this.paint();
@@ -22308,18 +22322,20 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     const left = l.ed ? edSpan(l.ed, l.ed.v ? rh(l.left) : '') : rh(l.left);
     return `<div class="ln ${l.bullet ? 'bl' : 'ct'}${gh}"${mt}><span class="l">${left}</span>${l.right ? `<span class="r">${rh(l.right)}</span>` : ''}</div>`;
   }
+  const ZOOM_BTN = '<button data-pa="zoom" title="Zoom this entry in or out (Esc zooms out)" aria-label="Zoom this entry in or out">⤢</button>';
+  const ZOOM_BAR = '<div class="zbar"><button data-pa="zoom" title="Back to page size (Esc)">⤡ Zoom out</button></div>';
   function itemBar(it, ver) {
-    if (it.sec === 'hobbies') return `<div class="itb"><button data-pa="hide" title="Hide hobbies in this version" aria-label="Hide hobbies in this version">⊘</button></div>`;
-    if (!LIST_SECS.includes(it.sec)) return '';
+    if (it.sec === 'hobbies') return `<div class="itb">${ZOOM_BTN}<button data-pa="hide" title="Hide hobbies in this version" aria-label="Hide hobbies in this version">⊘</button></div>`;
+    if (!LIST_SECS.includes(it.sec)) return `<div class="itb">${ZOOM_BTN}</div>`;
     const ord = ver.order[it.sec], i = ord.indexOf(it.id);
-    return `<div class="itb"><button data-pa="up" title="Move up" aria-label="Move up" ${i <= 0 ? 'disabled' : ''}>↑</button><button data-pa="down" title="Move down" aria-label="Move down" ${i === ord.length - 1 ? 'disabled' : ''}>↓</button><button data-pa="hide" title="Remove from this version (stays in your library)" aria-label="Remove from this version">⊘</button>${ui.armDel === it.id ? '<button data-pa="del" class="armed" title="Click again to delete" aria-label="Confirm delete">Delete?</button>' : '<button data-pa="del" title="Delete from every version" aria-label="Delete from every version">×</button>'}</div>`;
+    return `<div class="itb">${ZOOM_BTN}<button data-pa="up" title="Move up" aria-label="Move up" ${i <= 0 ? 'disabled' : ''}>↑</button><button data-pa="down" title="Move down" aria-label="Move down" ${i === ord.length - 1 ? 'disabled' : ''}>↓</button><button data-pa="hide" title="Remove from this version (stays in your library)" aria-label="Remove from this version">⊘</button>${ui.armDel === it.id ? '<button data-pa="del" class="armed" title="Click again to delete" aria-label="Confirm delete">Delete?</button>' : '<button data-pa="del" title="Delete from every version" aria-label="Delete from every version">×</button>'}</div>`;
   }
   const ADD_FOR = { skills: 'skills', work: 'work', projects: 'projects', courses: 'courses', positions: 'positions', achievements: 'achievements', refs: 'refs' };
   function headerHTML(h) {
     const p = state.master.personal;
     const E = (k, ph) => edSpan({ k: 'personal.' + k, v: p[k], ph }, esc(p[k]));
     const links = h.links.map((l, i) => (i ? '<span class="sep">|</span>' : '') + `<span class="hl${l.url ? ' blue' : ''}" data-pa="links" title="Edit links in the side panel">${esc(l.t)}</span>`).join(' ');
-    return `<div class="hd" data-sec="personal" data-id="header"><div class="nm">${E('name', 'YOUR NAME')}</div><div class="hr1"><span>${links}</span><span>${E('email', 'name.mec@gmail.com')}</span></div><div class="hr2"><span>DOB – ${E('dob', 'DD/MM/YYYY')}</span><span>${E('phone', '+91 XXXXXXXXXX')}</span></div></div>`;
+    return `<div class="hd${ui.zoom === 'personal:header' ? ' zm' : ''}" data-sec="personal" data-id="header"><div class="itb">${ZOOM_BTN}</div><div class="nm">${E('name', 'YOUR NAME')}</div><div class="hr1"><span>${links}</span><span>${E('email', 'name.mec@gmail.com')}</span></div><div class="hr2"><span>DOB – ${E('dob', 'DD/MM/YYYY')}</span><span>${E('phone', '+91 XXXXXXXXXX')}</span></div>${ZOOM_BAR}</div>`;
   }
   function caretOff(el) {
     const sel = window.getSelection(); if (!sel.rangeCount || !el.contains(sel.anchorNode)) return el.textContent.length;
@@ -22354,8 +22370,8 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
       head: `<div class="sh">${esc(b.title)}${ADD_FOR[b.key] ? `<button class="sha" data-add="${b.key}" title="Add an entry to this section">+ Add</button>` : ''}</div>`,
       items: b.items.map(it => {
         const iss = L.byItem[it.sec + ':' + it.id];
-        const cls = (iss ? (iss.some(i => i.lvl === 'err') ? 'bad' : 'warn') : '') + (ui.sel === it.sec + ':' + it.id ? ' sel' : '');
-        return `<div class="it ${cls}" data-sec="${it.sec}" data-id="${it.id}" ${iss ? `title="${esc(iss.map(i => i.msg).join(' '))}"` : ''}>${itemBar(it, ver)}${it.lines.map(lineHTML).join('')}</div>`;
+        const cls = (iss ? (iss.some(i => i.lvl === 'err') ? 'bad' : 'warn') : '') + (ui.sel === it.sec + ':' + it.id ? ' sel' : '') + (ui.zoom === it.sec + ':' + it.id ? ' zm' : '');
+        return `<div class="it ${cls}" data-sec="${it.sec}" data-id="${it.id}" ${iss ? `title="${esc(iss.map(i => i.msg).join(' '))}"` : ''}>${itemBar(it, ver)}${it.lines.map(lineHTML).join('')}${ZOOM_BAR}</div>`;
       })
     }));
     // 1) measure every piece in one hidden page
@@ -22381,6 +22397,7 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     // 3) draw the real pages
     sheet.innerHTML = pages.map((pg, i) => `<div class="pg" data-page="${i + 1}"><div class="pc">${pg.h}${pg.parts.join('')}</div><div class="ft">Govt. Model Engineering College, Kochi</div></div>`).join('');
     $('#pgcount').innerHTML = `<b>${pages.length}</b> ${pages.length === 1 ? 'page' : 'pages'} (estimate)`;
+    const zm = sheet.querySelector('.zm'); if (zm) zm.closest('.pg').classList.add('zm');
     fitPreview();
     if (keep) {
       const el = Array.from(sheet.querySelectorAll('[data-ek]')).find(x => x.dataset.ek === keep.ek);
@@ -22391,7 +22408,32 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     const wrap = $('#pvwrap'), sheet = $('#sheet'), box = $('#pvbox'); if (!wrap) return;
     const cs = getComputedStyle(wrap), avail = Math.max(300, wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)), s = Math.min(1, avail / 794);
     sheet.style.transform = `scale(${s})`;
+    fitZoom(s);
     box.style.width = 794 * s + 'px'; box.style.height = sheet.offsetHeight * s + 'px';
+  }
+  // Scale the zoomed entry to about 1.6x real size on screen, but never wider than the visible area,
+  // and push what follows down by the height the scaling adds.
+  function fitZoom(s) {
+    const el = $('#sheet').querySelector('.pg:not(.meas) .zm:not(.pg)'); if (!el) return;
+    const wrap = $('#pvwrap'), cs = getComputedStyle(wrap), avail = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 12;
+    const z = Math.max(1, Math.min(1.6 / s, avail / ((el.offsetWidth + 8) * s)));
+    el.style.transform = `scale(${z})`; el.style.marginBottom = el.offsetHeight * (z - 1) + 6 + 'px';
+  }
+  /* Enlarge one entry in place (key 'sec:id'), or none. Toggles classes only, so the field being typed in keeps its caret. */
+  function setZoom(key) {
+    ui.zoom = key || null;
+    const sheet = $('#sheet');
+    sheet.querySelectorAll('.zm').forEach(el => { el.classList.remove('zm'); el.style.transform = el.style.marginBottom = ''; });
+    const el = ui.zoom && Array.from(sheet.querySelectorAll('.pg:not(.meas) .it, .pg:not(.meas) .hd')).find(x => x.dataset.sec + ':' + x.dataset.id === ui.zoom);
+    if (el) { el.classList.add('zm'); el.closest('.pg').classList.add('zm'); }
+    fitPreview();
+    if (el) { const a = document.activeElement; (el.contains(a) ? a : el).scrollIntoView({ block: 'nearest' }); }
+  }
+  function setAutoZoom(on) {
+    ui.autoZoom = on;
+    const b = $('#zoomBtn'); b.textContent = 'Zoom on edit: ' + (on ? 'On' : 'Off'); b.setAttribute('aria-pressed', on);
+    try { localStorage.setItem('resumedesk.zoom', on ? 'on' : 'off'); } catch (e) { /* per-browser nicety only */ }
+    if (!on) setZoom(null);
   }
 
   /* Redraw the page soon, but never while a mouse button is held (that would break a click or text selection). */
@@ -22469,6 +22511,7 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     if (t) t.scrollIntoView({ block: 'nearest' }); else ed.scrollTop = 0;
   }
   function select(key) {
+    if (ui.zoom && ui.zoom !== key) setZoom(null); // moving to another entry (or off the page) zooms back out
     if (ui.sel === key) return;
     ui.sel = key;
     $('#sheet').querySelectorAll('.it').forEach(el => el.classList.toggle('sel', el.dataset.sec + ':' + el.dataset.id === key));
@@ -22511,7 +22554,9 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     window.addEventListener('pointerup', () => { ui.ptr = false; if (ui.ptrCb) { const f = ui.ptrCb; ui.ptrCb = null; setTimeout(f, 0); } });
     sheet.addEventListener('focusin', e => {
       if (ui.restoring) return;
-      const el = e.target.closest('[data-ek]'); if (el) select(keyOf(el));
+      const el = e.target.closest('[data-ek]'); if (!el) return;
+      const key = keyOf(el); select(key);
+      if (ui.autoZoom && ui.zoom !== key) setZoom(key);
     });
     sheet.addEventListener('input', e => {
       const el = e.target.closest('[data-ek]'), ed = el && ui.eds[el.dataset.ek]; if (!ed || LATE.includes(ed.kind)) return;
@@ -22553,6 +22598,12 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
       if (e.target.closest('[data-ek]')) return;
       const add = e.target.closest('[data-add]'); if (add) { addTo(add.dataset.add); return; }
       const pa = e.target.closest('[data-pa]');
+      if (pa && pa.dataset.pa === 'zoom') {
+        const key = keyOf(pa);
+        if (ui.zoom === key) { const a = document.activeElement; if (a && sheet.contains(a)) a.blur(); setZoom(null); }
+        else { select(key); setZoom(key); const f = pa.closest('[data-sec][data-id]').querySelector('[data-ek]'); if (f) { f.focus({ preventScroll: true }); setCaret(f, f.textContent.length); } }
+        return;
+      }
       if (pa && pa.dataset.pa === 'links') { select('personal:header'); showInPanel('personal'); const i = $('#editor').querySelector('[data-k="personal.linkedin"]'); if (i) i.focus(); if (document.body.dataset.view === 'page' && matchMedia('(max-width:1180px)').matches) setView('panel'); return; }
       if (pa) { pageAction(pa); return; }
       const it = e.target.closest('[data-sec][data-id]');
@@ -22863,7 +22914,8 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     $('#dclose').addEventListener('click', () => { $('#dlg').hidden = true; });
     $('#dgo').addEventListener('click', driveUpload);
     $('#dlg').addEventListener('click', e => { if (e.target.id === 'dlg') $('#dlg').hidden = true; });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#dlg').hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#dlg').hidden = true; if (ui.zoom) setZoom(null); } });
+    $('#zoomBtn').addEventListener('click', () => setAutoZoom(!ui.autoZoom));
     wireSheet();
     $('#addbar').addEventListener('click', e => { const b = e.target.closest('[data-add]'); if (b) addTo(b.dataset.add); });
     $('#panelBtn').addEventListener('click', () => setPanel(document.body.dataset.panel === 'off'));
@@ -22890,6 +22942,8 @@ if (typeof module !== 'undefined') module.exports = PdfGen;
     } catch (e) { /* import stays disabled */ }
     let panel = 'on'; try { panel = localStorage.getItem('resumedesk.panel') || 'on'; } catch (e) { /* default */ }
     document.body.dataset.panel = panel; $('#panelBtn').textContent = panel === 'off' ? 'Show details' : 'Hide details';
+    let zoom = 'on'; try { zoom = localStorage.getItem('resumedesk.zoom') || 'on'; } catch (e) { /* default */ }
+    setAutoZoom(zoom === 'on');
     setView('page');
     wire(); renderAll();
     await Store.init();
