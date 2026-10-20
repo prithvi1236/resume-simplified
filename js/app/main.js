@@ -8,7 +8,7 @@ import { renderAll, setView, setPanel, goto } from './layout.js';
 import { download } from './files.js';
 import { addSkill, addHobby, onInput, onChange, onClick } from './editor/events.js';
 import { renderPreview, fitPreview } from './page/render.js';
-import { setZoom, setAutoZoom } from './page/zoom.js';
+import { setZoom, setAutoZoom, followCaret } from './page/zoom.js';
 import { addTo } from './page/select.js';
 import { wireSheet } from './page/wire.js';
 
@@ -37,6 +37,7 @@ function wire() {
   $('#dlpdf').addEventListener('click', () => download(null, 'pdf'));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.zoom) setZoom(null); });
   $('#zoomBtn').addEventListener('click', () => setAutoZoom(!ui.autoZoom));
+  document.addEventListener('selectionchange', followCaret);
   wireSheet();
   $('#addbar').addEventListener('click', e => { const b = e.target.closest('[data-add]'); if (b) addTo(b.dataset.add); });
   $('#panelBtn').addEventListener('click', () => setPanel(document.body.dataset.panel === 'off'));
@@ -55,7 +56,15 @@ function loadFonts() {
     });
   } catch (e) { /* preview keeps fallback font */ }
 }
+// iOS Safari zooms the whole page in when a field with text under 16px gets focus, and stays zoomed.
+// The page already enlarges the entry being edited, so turn that off there (pinch zoom still works on iOS).
+function noFocusZoom() {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const m = document.querySelector('meta[name="viewport"]');
+  if (ios && m && !/maximum-scale/.test(m.content)) m.content += ', maximum-scale=1';
+}
 async function boot() {
+  noFocusZoom();
   loadFonts();
   if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdf.worker.min.js', import.meta.url).href;
   let panel = 'on'; try { panel = localStorage.getItem('resumedesk.panel') || 'on'; } catch (e) { /* default */ }

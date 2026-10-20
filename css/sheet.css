@@ -64,6 +64,8 @@
 /* Scaled, not re-laid-out, so every line wraps exactly as on the page. fitZoom() sets the scale and reserves the extra height. */
 #sheet .pg:not(.meas) .zm{position:relative;z-index:2;transform-origin:50% 0;margin-top:6px;background:#F4FAFA;outline:2px solid rgba(13,92,99,.6);outline-offset:3px;border-radius:2px}
 #sheet .zm>.itb{display:none!important}
+#pvbox.pan{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+#pvbox.pan #sheet .zm>.zbar{justify-content:flex-start}
 #sheet .zbar{display:none}
 #sheet .pg:not(.meas) .zm>.zbar{display:flex;justify-content:flex-end;margin-top:4px}
 #sheet .zbar button{border:1px solid #0D5C63;background:#0D5C63;color:#fff;border-radius:99px;font:600 9px/1 var(--ui);padding:3px 8px}

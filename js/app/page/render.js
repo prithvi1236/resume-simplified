@@ -47,6 +47,7 @@ function drawPages() {
   // 1) measure every piece in one hidden page
   let meas = '<div class="pg meas"><div class="pc"><div class="fr">' + hdr1 + '</div><div class="fr">' + hdr2 + '</div>';
   units.forEach(u => { meas += '<div class="fr">' + u.head + '</div>' + u.items.map(x => '<div class="fr">' + x + '</div>').join(''); });
+  const panX = $('#pvbox').scrollLeft; // a sideways-panned zoomed entry keeps its scroll position across the redraw
   sheet.style.transform = 'none';
   sheet.innerHTML = meas + '</div></div>';
   const hs = Array.from(sheet.querySelectorAll('.pc > .fr')).map(n => n.getBoundingClientRect().height);
@@ -68,7 +69,7 @@ function drawPages() {
   sheet.innerHTML = pages.map((pg, i) => `<div class="pg" data-page="${i + 1}"><div class="pc">${pg.h}${pg.parts.join('')}</div><div class="ft">Govt. Model Engineering College, Kochi</div></div>`).join('');
   $('#pgcount').innerHTML = `<b>${pages.length}</b> ${pages.length === 1 ? 'page' : 'pages'} (estimate)`;
   const zm = sheet.querySelector('.zm'); if (zm) zm.closest('.pg').classList.add('zm');
-  fitPreview();
+  fitPreview(); $('#pvbox').scrollLeft = panX;
   if (keep) {
     const el = Array.from(sheet.querySelectorAll('[data-ek]')).find(x => x.dataset.ek === keep.ek);
     if (el) { if (keep.late) el.textContent = keep.text; el.focus({ preventScroll: true }); setCaret(el, keep.off); }
