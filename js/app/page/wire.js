@@ -15,21 +15,7 @@ import { showInPanel, select, keyOf, addTo, pageAction } from './select.js';
 export function wireSheet() {
   const sheet = $('#sheet');
   sheet.addEventListener('pointerdown', () => { ui.ptr = true; });
-  // Pressing blank paper would move the caret into the nearest field (and, on a phone, scroll a panned entry
-  // sideways so the tap misses); let the click below handle it instead. A press that starts on a field is never
-  // a click on the paper, even though zooming in moves the field before the button comes up.
-  let downOnField = false;
-  sheet.addEventListener('mousedown', e => {
-    downOnField = !!e.target.closest('[data-ek]');
-    if (!e.target.closest('[data-sec][data-id], [data-ek], button, a')) e.preventDefault();
-  });
-  // A tap's mousedown, focus and click all come after its pointerup, so after a touch hold redraws until the click
-  // (or give up after a moment), or the click lands on a replaced element. A touch that scrolls ends with pointercancel.
-  let tapT = null;
-  const release = () => { clearTimeout(tapT); ui.ptr = false; if (ui.ptrCb) { const f = ui.ptrCb; ui.ptrCb = null; setTimeout(f, 0); } };
-  window.addEventListener('pointerup', e => { if (e.pointerType === 'mouse') release(); else { clearTimeout(tapT); tapT = setTimeout(release, 600); } });
-  window.addEventListener('pointercancel', release);
-  window.addEventListener('click', () => { if (ui.ptr) release(); }, true);
+  window.addEventListener('pointerup', () => { ui.ptr = false; if (ui.ptrCb) { const f = ui.ptrCb; ui.ptrCb = null; setTimeout(f, 0); } });
   sheet.addEventListener('focusin', e => {
     if (ui.restoring) return;
     const el = e.target.closest('[data-ek]'); if (!el) return;
@@ -73,7 +59,7 @@ export function wireSheet() {
   });
   sheet.addEventListener('drop', e => { if (e.target.closest('[data-ek]')) e.preventDefault(); });
   sheet.addEventListener('click', e => {
-    if (e.target.closest('[data-ek]') || downOnField) return;
+    if (e.target.closest('[data-ek]')) return;
     const add = e.target.closest('[data-add]'); if (add) { addTo(add.dataset.add); return; }
     const pa = e.target.closest('[data-pa]');
     if (pa && pa.dataset.pa === 'zoom') {
@@ -85,7 +71,6 @@ export function wireSheet() {
     if (pa && pa.dataset.pa === 'links') { select('personal:header'); showInPanel('personal'); const i = $('#editor').querySelector('[data-k="personal.linkedin"]'); if (i) i.focus(); if (document.body.dataset.view === 'page' && matchMedia('(max-width:1180px)').matches) setView('panel'); return; }
     if (pa) { pageAction(pa); return; }
     const it = e.target.closest('[data-sec][data-id]');
-    if (!it) { const a = document.activeElement; if (a && sheet.contains(a)) a.blur(); }
     select(it ? it.dataset.sec + ':' + it.dataset.id : '');
   });
 }

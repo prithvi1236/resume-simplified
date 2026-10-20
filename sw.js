@@ -1,4 +1,4 @@
-const CACHE = 'resume-desk-v5';
+const CACHE = 'resume-desk-v4';
 const PRECACHE = [
   './',
   './index.html',
