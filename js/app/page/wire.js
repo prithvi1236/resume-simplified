@@ -10,12 +10,18 @@ import { queueRefresh } from './render.js';
 import { setZoom } from './zoom.js';
 import { setCaret } from './caret.js';
 import { readEd, applyEd, syncPanel, paintSheetMarks } from './apply.js';
-import { showInPanel, select, keyOf, addTo, pageAction } from './select.js';
+import { showInPanel, select, keyOf, addTo, pageAction, markMove } from './select.js';
 
 export function wireSheet() {
   const sheet = $('#sheet');
   sheet.addEventListener('pointerdown', () => { ui.ptr = true; });
   window.addEventListener('pointerup', () => { ui.ptr = false; if (ui.ptrCb) { const f = ui.ptrCb; ui.ptrCb = null; setTimeout(f, 0); } });
+  // Preview a move while the pointer or keyboard focus is on an up/down arrow.
+  const mvOf = e => e.target.closest && e.target.closest('.mv');
+  sheet.addEventListener('pointerover', e => { const b = mvOf(e); if (b) markMove(b, true); });
+  sheet.addEventListener('pointerout', e => { const b = mvOf(e); if (b && !b.contains(e.relatedTarget)) markMove(b, false); });
+  sheet.addEventListener('focusin', e => { const b = mvOf(e); if (b) markMove(b, true); });
+  sheet.addEventListener('focusout', e => { const b = mvOf(e); if (b) markMove(b, false); });
   sheet.addEventListener('focusin', e => {
     if (ui.restoring) return;
     const el = e.target.closest('[data-ek]'); if (!el) return;
