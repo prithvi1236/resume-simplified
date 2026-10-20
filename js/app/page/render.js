@@ -9,12 +9,18 @@ import { caretOff, setCaret } from './caret.js';
 const { esc } = Core;
 
 const ZOOM_BTN = '<button data-pa="zoom" title="Zoom this entry in or out (Esc zooms out)" aria-label="Zoom this entry in or out">⤢</button>';
-const ZOOM_BAR = '<div class="zbar"><button data-pa="zoom" title="Back to page size (Esc)">⤡ Zoom out</button></div>';
+const ZOOM_OUT = '<button data-pa="zoom" title="Back to page size (Esc)">⤡ Zoom out</button>';
+const ZOOM_BAR = `<div class="zbar">${ZOOM_OUT}</div>`;
+// Up and down sit on the entry's top and bottom edges and the side bar only zooms; hide and delete show only in zoom view.
 function itemBar(it, ver) {
-  if (it.sec === 'hobbies') return `<div class="itb">${ZOOM_BTN}<button data-pa="hide" title="Hide hobbies in this version" aria-label="Hide hobbies in this version">⊘</button></div>`;
   if (!LIST_SECS.includes(it.sec)) return `<div class="itb">${ZOOM_BTN}</div>`;
   const ord = ver.order[it.sec], i = ord.indexOf(it.id);
-  return `<div class="itb">${ZOOM_BTN}<button data-pa="up" title="Move up" aria-label="Move up" ${i <= 0 ? 'disabled' : ''}>↑</button><button data-pa="down" title="Move down" aria-label="Move down" ${i === ord.length - 1 ? 'disabled' : ''}>↓</button><button data-pa="hide" title="Remove from this version (stays in your library)" aria-label="Remove from this version">⊘</button>${ui.armDel === it.id ? '<button data-pa="del" class="armed" title="Click again to delete" aria-label="Confirm delete">Delete?</button>' : '<button data-pa="del" title="Delete from every version" aria-label="Delete from every version">×</button>'}</div>`;
+  return `${i > 0 ? '<button class="mv up" data-pa="up" title="Move up" aria-label="Move up">↑</button>' : ''}${i < ord.length - 1 ? '<button class="mv down" data-pa="down" title="Move down" aria-label="Move down">↓</button>' : ''}<div class="itb">${ZOOM_BTN}</div>`;
+}
+function zoomBar(it) {
+  if (it.sec === 'hobbies') return `<div class="zbar"><button data-pa="hide" title="Hide hobbies in this version" aria-label="Hide hobbies in this version">⊘ Hide</button>${ZOOM_OUT}</div>`;
+  if (!LIST_SECS.includes(it.sec)) return ZOOM_BAR;
+  return `<div class="zbar"><button data-pa="hide" title="Remove from this version (stays in your library)" aria-label="Remove from this version">⊘ Remove</button>${ui.armDel === it.id ? '<button data-pa="del" class="armed" title="Click again to delete" aria-label="Confirm delete">Delete?</button>' : '<button data-pa="del" title="Delete from every version" aria-label="Delete from every version">× Delete</button>'}${ZOOM_OUT}</div>`;
 }
 const ADD_FOR = { skills: 'skills', work: 'work', projects: 'projects', courses: 'courses', positions: 'positions', achievements: 'achievements', refs: 'refs' };
 function headerHTML(h) {
@@ -41,7 +47,7 @@ function drawPages() {
     items: b.items.map(it => {
       const iss = L.byItem[it.sec + ':' + it.id];
       const cls = (iss ? (iss.some(i => i.lvl === 'err') ? 'bad' : 'warn') : '') + (ui.sel === it.sec + ':' + it.id ? ' sel' : '') + (ui.zoom === it.sec + ':' + it.id ? ' zm' : '');
-      return `<div class="it ${cls}" data-sec="${it.sec}" data-id="${it.id}" ${iss ? `title="${esc(iss.map(i => i.msg).join(' '))}"` : ''}>${itemBar(it, ver)}${it.lines.map(lineHTML).join('')}${ZOOM_BAR}</div>`;
+      return `<div class="it ${cls}" data-sec="${it.sec}" data-id="${it.id}" ${iss ? `title="${esc(iss.map(i => i.msg).join(' '))}"` : ''}>${itemBar(it, ver)}${it.lines.map(lineHTML).join('')}${zoomBar(it)}</div>`;
     })
   }));
   // 1) measure every piece in one hidden page

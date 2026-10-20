@@ -46,10 +46,10 @@ export function addTo(sec) {
 }
 export function pageAction(btn) {
   const itEl = btn.closest('.it'), sec = itEl.dataset.sec, id = itEl.dataset.id, ver = curVer(), act = btn.dataset.pa;
-  if (sec === 'hobbies') { ver.hobbies = false; ui.sel = ''; changed(); renderEditor(); toast('Hobbies hidden in "' + ver.name + '". Turn them back on under Achievements in the side panel.'); return; }
+  if (sec === 'hobbies') { ver.hobbies = false; ui.sel = ''; ui.zoom = null; changed(); renderEditor(); toast('Hobbies hidden in "' + ver.name + '". Turn them back on under Achievements in the side panel.'); return; }
   const ord = ver.order[sec], i = ord.indexOf(id);
   if (act === 'up' || act === 'down') { moveIn(ord, i, act === 'up' ? -1 : 1); changed(); renderEditor(); return; }
-  if (act === 'hide') { ver.order[sec] = ord.filter(x => x !== id); ui.sel = ''; changed(); renderEditor(); toast('Removed from "' + ver.name + '". It stays in your library under ' + CFG[sec].title + '.'); return; }
+  if (act === 'hide') { ver.order[sec] = ord.filter(x => x !== id); ui.sel = ''; ui.zoom = null; changed(); renderEditor(); toast('Removed from "' + ver.name + '". It stays in your library under ' + CFG[sec].title + '.'); return; }
   // The armed state lives in ui (not on the button) because a page redraw can replace the button between the two clicks.
   if (act === 'del') {
     if (ui.armDel !== id) {
@@ -57,6 +57,6 @@ export function pageAction(btn) {
       clearTimeout(ui.armT); ui.armT = setTimeout(() => { ui.armDel = null; queueRefresh(); }, 3200); return;
     }
     ui.armDel = null; clearTimeout(ui.armT);
-    state.master[sec] = state.master[sec].filter(x => x.id !== id); state.versions.forEach(v => { v.order[sec] = v.order[sec].filter(x => x !== id); }); ui.sel = ''; changed(); renderEditor();
+    state.master[sec] = state.master[sec].filter(x => x.id !== id); state.versions.forEach(v => { v.order[sec] = v.order[sec].filter(x => x !== id); }); ui.sel = ''; ui.zoom = null; changed(); renderEditor();
   }
 }
