@@ -6,14 +6,17 @@ import { Store } from './store.js';
 import { touch, History } from './history.js';
 import { renderAll, setView, setPanel, goto } from './layout.js';
 import { download } from './files.js';
-import { addSkill, addHobby, onInput, onChange, onClick } from './editor/events.js';
+import { addSkill, addHobby, onInput, onChange, onClick, panelKey } from './editor/events.js';
 import { renderPreview, fitPreview } from './page/render.js';
 import { setZoom, setAutoZoom } from './page/zoom.js';
-import { addTo } from './page/select.js';
+import { addTo, selectFromPanel } from './page/select.js';
 import { wireSheet } from './page/wire.js';
 
 function wire() {
   const ed = $('#editor');
+  // Using a field in the side panel zooms the page in on the entry it edits (before onClick, which may redraw the panel).
+  const zoomFromPanel = e => selectFromPanel(panelKey(e.target));
+  ed.addEventListener('focusin', zoomFromPanel); ed.addEventListener('click', zoomFromPanel);
   ed.addEventListener('input', onInput); ed.addEventListener('change', onChange); ed.addEventListener('click', onClick);
   $('#nav').addEventListener('click', onClick);
   ed.addEventListener('keydown', e => {

@@ -30,6 +30,16 @@ export function select(key) {
   if (key) { const [sec, id] = key.split(':'); showInPanel(sec, id); }
   queueRefresh(); // shows or hides the selected entry's empty optional lines
 }
+/* A side-panel field is in use: select and zoom its entry on the page, leaving the panel as it is. */
+export function selectFromPanel(key) {
+  if (!key || !ui.autoZoom || (ui.sel === key && ui.zoom === key)) return;
+  if (ui.sel !== key) {
+    ui.sel = key;
+    $('#sheet').querySelectorAll('.it').forEach(el => el.classList.toggle('sel', el.dataset.sec + ':' + el.dataset.id === key));
+    queueRefresh(); // shows the entry's empty optional lines
+  }
+  if (ui.zoom !== key) setZoom(key);
+}
 export const keyOf = el => { const it = el.closest('[data-sec][data-id]'); return it ? it.dataset.sec + ':' + it.dataset.id : ''; };
 export function addTo(sec) {
   const ver = curVer();

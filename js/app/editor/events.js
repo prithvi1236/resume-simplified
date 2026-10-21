@@ -24,6 +24,19 @@ export function addHobby(raw) {
   if (!state.master.hobbies.includes(v)) state.master.hobbies.push(v);
   changed(); renderEditor();
 }
+/* The page entry ('sec:id') a side-panel control edits, or ''. */
+export function panelKey(t) {
+  if (!t.closest) return '';
+  const card = t.closest('.card[data-key]'); if (card) return card.dataset.key;
+  const k = t.dataset.k || '', p = k.split('.');
+  if (p[0] === 'personal') return 'personal:header';
+  if (p[0] === 'inst') return 'refs:' + (p[1][0] === 'p' ? 'principal' : 'hod');
+  if (p[0] === 'edu') return 'edu:' + (p[1] === 'branch' ? 'btech' : p[1]);
+  const panel = t.closest('.panel'), sk = panel && panel.querySelector('[data-skin]');
+  if (sk) return 'skills:' + sk.dataset.skin;
+  if (panel && panel.querySelector('[data-hobin]')) return 'hobbies:hobbies';
+  return '';
+}
 export function onInput(e) {
   const t = e.target;
   if (t.dataset.cg) { const [i, f] = t.dataset.cg.split('.'); ui.cg[+i][f] = t.value; paintCg(); return; }
