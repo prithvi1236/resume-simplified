@@ -23,3 +23,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--acc)}
 .mode{display:none}
 .hist{display:flex;gap:4px}.hist .btn{padding:7px 10px;font-size:15px;line-height:1.1}
 .mode .btn.on{background:var(--acc-soft);border-color:var(--acc-line);font-weight:600}
+/* GitHub link, sized and spaced to sit just left of the Buy Me a Coffee button (64px, 18px from the corner). */
+.gh-fab{position:fixed;right:94px;bottom:18px;z-index:9999;display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:32px;background:#24292f;color:#fff;box-shadow:0 4px 8px rgba(0,0,0,.15);transition:.25s ease all}
+.gh-fab:hover{transform:scale(1.1)}
